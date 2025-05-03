@@ -1,2 +1,34 @@
-/logs
-/__pycache__
+# Python开发环境
+venv/
+.env/
+.python-version
+
+# 编译文件
+*.py[cod]
+__pycache__/
+
+# IDE配置
+.idea/
+.vscode/
+*.swp
+*.sublime-workspace
+
+# 测试与构建
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+
+# 本地日志与数据库
+*.log
+*.sqlite3
+
+# 系统生成文件
+.DS_Store
+Thumbs.db
+
+# 用户生成内容
+/resources/*.wav
+/resources/*.mp3
+*.spec
