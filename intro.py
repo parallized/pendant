@@ -1,6 +1,8 @@
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QPushButton, QVBoxLayout, QWidget
 from style import Styles
-from PyQt6.QtCore import Qt, QThread, pyqtSignal, QUrl
+from PyQt6.QtCore import Qt, QThread, pyqtSignal, QUrl, QAbstractNativeEventFilter
+import win32con
+import win32gui
 from PyQt6.QtGui import QShortcut
 from PyQt6.QtMultimedia import QSoundEffect
 import sys
@@ -44,18 +46,23 @@ class OCRWorker(QThread):
         self.is_running = False
 
 class ModernApp(QMainWindow):
+    hotkey_signal = pyqtSignal()
+    
     def __init__(self):
         super().__init__()
         self.initUI()
         self.counter = 1
         self.is_active = False
         
-        # 新增音效初始化
-        # self.sound_on = QSoundEffect()
-        # self.sound_on.setSource(QUrl.fromLocalFile('resources/on.mp3'))
-        # self.sound_off = QSoundEffect()
-        # self.sound_off.setSource(QUrl.fromLocalFile('resources/off.wav'))
-        QShortcut(Qt.Key.Key_F4, self).activated.connect(self.toggle_state)
+        # 初始化热键管理器
+        from window_controller import HotkeyManager
+        self.hotkey_mgr = HotkeyManager()
+        self.hotkey_mgr.register(self.handle_hotkey)
+        self.hotkey_signal.connect(self.toggle_state)
+
+    def handle_hotkey(self):
+        print("hotkey pressed")
+        self.hotkey_signal.emit()
 
     def toggle_state(self):
         self.is_active = not self.is_active
@@ -118,6 +125,19 @@ class ModernApp(QMainWindow):
     def on_ocr_error(self, error_msg):
         self.text_output.append(f"错误: {error_msg}")
         self.action_btn.setEnabled(True)
+
+    def closeEvent(self, event):
+        self.hotkey_mgr.unregister()
+        event.accept()
+
+class MsgThread(QThread):
+    def run(self):
+        while getattr(self, "_running", True):
+            win32gui.PumpMessages()
+            time.sleep(0.1)
+    
+    def stop(self):
+        self._running = False
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)

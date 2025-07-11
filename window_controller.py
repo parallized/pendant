@@ -1,6 +1,21 @@
 import win32gui
 import win32con
 import time
+import keyboard
+
+class HotkeyManager:
+    def __init__(self):
+        self.hotkey_handle = None
+        print('Ctrl+H 热键已初始化')  
+        
+    def register(self, callback):
+        self.hotkey_handle = keyboard.add_hotkey('ctrl+h', lambda: callback())
+        print('Ctrl+H 已注册')
+        
+    def unregister(self):
+        if self.hotkey_handle:
+            keyboard.remove_hotkey(self.hotkey_handle)
+            print('Ctrl+H 已注销')
 
 def find_wow_window():
     return win32gui.FindWindow(None, '魔兽世界')
